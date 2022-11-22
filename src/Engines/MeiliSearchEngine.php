@@ -168,11 +168,11 @@ class MeiliSearchEngine extends Engine
     protected function filters(Builder $builder)
     {
         $filters = collect($builder->wheres)->map(function ($value, $key) {
-            if (is_bool($value)) {
+            if (is_bool($value['value'])) {
                 return sprintf('%s%s%s', $key, $value['operator'], $value['value'] ? 'true' : 'false');
             }
 
-            return is_numeric($value)
+            return is_numeric($value['value'])
                             ? sprintf('%s%s%s', $key, $value['operator'], $value['value'])
                             : sprintf('%s%s"%s"', $key, $value['operator'], $value['value']);
         });
