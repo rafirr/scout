@@ -115,9 +115,14 @@ class Builder
      * @param  mixed  $value
      * @return $this
      */
-    public function where($field, $value)
+    public function where($field, $operator, $value = null)
     {
-        $this->wheres[$field] = $value;
+        if (func_num_args() == 2) {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->wheres[$field] = compact('operator', 'value');
 
         return $this;
     }
