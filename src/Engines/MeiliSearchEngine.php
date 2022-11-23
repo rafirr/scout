@@ -188,6 +188,10 @@ class MeiliSearchEngine extends Engine
                                 : sprintf('%s="%s"', $key, $value);
             })->values()->implode(' OR ')));
         }
+        
+        foreach ($builder->whereNotIns as $key => $values) {
+            $filters->push(sprintf('%s NOT IN [%s]', $key, implode(', ', $values)));
+        }
 
         return $filters->values()->implode(' AND ');
     }
