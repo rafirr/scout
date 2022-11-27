@@ -60,7 +60,7 @@ class Builder
      * @var array
      */
     public $whereIns = [];
-    
+
     /**
      * The "where not in" constraints added to the query.
      *
@@ -98,7 +98,7 @@ class Builder
         $this->callback = $callback;
 
         if ($softDelete) {
-            $this->wheres['__soft_deleted'] = 0;
+            $this->where('__soft_deleted', 0);
         }
     }
 
@@ -147,7 +147,7 @@ class Builder
 
         return $this;
     }
-    
+
     /**
      * Add a "where not in" constraint to the search query.
      *
@@ -182,7 +182,7 @@ class Builder
     public function onlyTrashed()
     {
         return tap($this->withTrashed(), function () {
-            $this->wheres['__soft_deleted'] = 1;
+            $this->where('__soft_deleted', 1);
         });
     }
 
@@ -440,8 +440,8 @@ class Builder
         $results = $engine->paginate($this, $perPage, $page);
 
         return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
-            'items' => $results,
-            'total' => $this->getTotalCount($results),
+            'items' => $results['hits'],
+            'total' => $results['estimatedTotalHits'] ?? $this->getTotalCount($results),
             'perPage' => $perPage,
             'currentPage' => $page,
             'options' => [
