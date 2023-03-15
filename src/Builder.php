@@ -62,6 +62,13 @@ class Builder
     public $whereIns = [];
 
     /**
+     * The "where not in" constraints added to the query.
+     *
+     * @var array
+     */
+    public $whereNotIns = [];
+
+    /**
      * The "limit" that should be applied to the search.
      *
      * @var int
@@ -98,7 +105,7 @@ class Builder
         $this->callback = $callback;
 
         if ($softDelete) {
-            $this->wheres['__soft_deleted'] = 0;
+            $this->where('__soft_deleted', 0);
         }
     }
 
@@ -122,9 +129,14 @@ class Builder
      * @param  mixed  $value
      * @return $this
      */
-    public function where($field, $value)
+    public function where($field, $operator, $value = null)
     {
-        $this->wheres[$field] = $value;
+        if (func_num_args() == 2) {
+            $value = $operator;
+            $operator = '=';
+        }
+
+        $this->wheres[$field] = compact('operator', 'value');
 
         return $this;
     }
@@ -139,6 +151,20 @@ class Builder
     public function whereIn($field, array $values)
     {
         $this->whereIns[$field] = $values;
+
+        return $this;
+    }
+
+    /**
+     * Add a "where not in" constraint to the search query.
+     *
+     * @param  string  $field
+     * @param  array  $values
+     * @return $this
+     */
+    public function whereNotIn($field, array $values)
+    {
+        $this->whereNotIns[$field] = $values;
 
         return $this;
     }
@@ -163,7 +189,7 @@ class Builder
     public function onlyTrashed()
     {
         return tap($this->withTrashed(), function () {
-            $this->wheres['__soft_deleted'] = 1;
+            $this->where('__soft_deleted', 1);
         });
     }
 
@@ -400,8 +426,8 @@ class Builder
         )->all());
 
         return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
-            'items' => $results,
-            'total' => $this->getTotalCount($rawResults),
+            'items' => $results['hits'],
+            'total' => $results['estimatedTotalHits'] ?? $this->getTotalCount($results),
             'perPage' => $perPage,
             'currentPage' => $page,
             'options' => [

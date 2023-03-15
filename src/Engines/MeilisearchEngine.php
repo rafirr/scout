@@ -168,13 +168,13 @@ class MeilisearchEngine extends Engine
     protected function filters(Builder $builder)
     {
         $filters = collect($builder->wheres)->map(function ($value, $key) {
-            if (is_bool($value)) {
-                return sprintf('%s=%s', $key, $value ? 'true' : 'false');
+            if (is_bool($value['value'])) {
+                return sprintf('%s%s%s', $key, $value['operator'], $value['value'] ? 'true' : 'false');
             }
 
-            return is_numeric($value)
-                            ? sprintf('%s=%s', $key, $value)
-                            : sprintf('%s="%s"', $key, $value);
+            return is_numeric($value['value'])
+                ? sprintf('%s%s%s', $key, $value['operator'], $value['value'])
+                : sprintf('%s%s"%s"', $key, $value['operator'], $value['value']);
         });
 
         foreach ($builder->whereIns as $key => $values) {
@@ -187,6 +187,10 @@ class MeilisearchEngine extends Engine
                                 ? sprintf('%s=%s', $key, $value)
                                 : sprintf('%s="%s"', $key, $value);
             })->values()->implode(' OR ')));
+        }
+
+        foreach ($builder->whereNotIns as $key => $values) {
+            $filters->push(sprintf('%s NOT IN [%s]', $key, implode(', ', $values)));
         }
 
         return $filters->values()->implode(' AND ');
