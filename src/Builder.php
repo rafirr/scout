@@ -426,7 +426,7 @@ class Builder
         )->all());
 
         return Container::getInstance()->makeWith(LengthAwarePaginator::class, [
-            'items' => $rawResults['hits'],
+            'items' => $results,
             'total' => $rawResults['estimatedTotalHits'] ?? $this->getTotalCount($rawResults),
             'perPage' => $perPage,
             'currentPage' => $page,
