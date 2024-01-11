@@ -136,7 +136,8 @@ class Builder
             $operator = '=';
         }
 
-        $this->wheres[$field] = compact('operator', 'value');
+        //$this->wheres[$field] = compact('operator', 'value');
+        $this->wheres[] = ['field' => $field, 'operator' => $operator, 'value' => $value];
 
         return $this;
     }
